@@ -1,0 +1,3837 @@
+openapi: 3.1.0
+info:
+  title: PixelAPI
+  description: 'AI-powered image processing API running on privately-owned GPUs.
+
+
+    ## What it does
+
+    - **Background Removal** — BiRefNet model, transparent PNG output, $0.005/image
+
+    - **AI Product Photography** — one-call pipeline: remove BG + generate new background
+    (studio, marble, outdoor), $0.075/image
+
+    - **Image Generation** — FLUX Schnell, FLUX Dev, SDXL, $0.001/image
+
+    - **4x Upscaling** — Real-ESRGAN, $0.005/image
+
+    - **Virtual Try-On** — CatVTON/OOTDiffusion, garment on model, $0.050/image
+
+    - **Object Removal** — inpainting-based, $0.020/image
+
+    - **Text Removal** — $0.020/image
+
+    - **Face Restoration** — GFPGAN, $0.005/image
+
+    - **AI Product Shadows** — soft/hard/natural/floating, $0.010/image
+
+    - **Image Captioning** — BLIP-based, returns description + SEO tags + alt text,
+    $0.005/image
+
+    - **Outpainting** — extend image borders, $0.030/image
+
+    - **Text-to-Video** — Wan 2.1, $TBD/video
+
+
+    ## Pricing
+
+    Starts at $0.001/image. 5-10x cheaper than Replicate or fal.ai for equivalent
+    models.
+
+    Starter plan: $10/10K credits. Pro: $50/60K. Scale: $200/300K.
+
+
+    ## Auth
+
+    Bearer token via `Authorization` header or `X-API-Key` header.'
+  version: 1.0.0
+  x-logo:
+    url: https://pixelapi.dev/apple-touch-icon.png
+    backgroundColor: '#09090b'
+  contact:
+    email: support@pixelapi.dev
+    url: https://pixelapi.dev
+  license:
+    name: Proprietary
+  termsOfService: https://pixelapi.dev/terms.html
+  x-providerName: pixelapi.dev
+paths:
+  /v1/image/generate:
+    post:
+      tags:
+      - Image
+      summary: Generate Image
+      operationId: generate_image_v1_image_generate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageGenerateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageGenerateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/{generation_id}:
+    get:
+      tags:
+      - Image
+      summary: Get Generation
+      operationId: get_generation_v1_image__generation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: generation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Generation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationStatus'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/video/generate:
+    post:
+      tags:
+      - Video
+      summary: Generate Video
+      operationId: generate_video_v1_video_generate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VideoGenerateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoGenerateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/video/i2v:
+    post:
+      tags:
+      - Video
+      summary: Image To Video
+      description: Image-to-Video generation using WAN 2.1 I2V via ComfyUI on LLM3.
+      operationId: image_to_video_v1_video_i2v_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_image_to_video_v1_video_i2v_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoGenerateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/video/{generation_id}/notify:
+    post:
+      tags:
+      - Video
+      summary: Set Video Notify Email
+      description: Register an email to notify when video is ready.
+      operationId: set_video_notify_email_v1_video__generation_id__notify_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: generation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Generation Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Body
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/video/{generation_id}:
+    get:
+      tags:
+      - Video
+      summary: Get Video Generation
+      operationId: get_video_generation_v1_video__generation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: generation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Generation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoStatus'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/image/upscale:
+    post:
+      tags:
+      - Upscale
+      summary: Upscale Image
+      description: 'Upscale an image to 4x resolution using Real-ESRGAN.
+
+
+        Accepts either:
+
+        - File upload (multipart/form-data with ''image'' field)
+
+        - image_url (form field with URL to fetch)
+
+
+        Cost: 20 credits ($0.02)'
+      operationId: upscale_image_v1_image_upscale_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upscale_image_v1_image_upscale_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/upscale/{generation_id}:
+    get:
+      tags:
+      - Upscale
+      summary: Get Upscale Status
+      operationId: get_upscale_status_v1_image_upscale__generation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: generation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Generation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpscaleStatus'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/image/enhance:
+    post:
+      tags:
+      - Upscale
+      summary: Enhance Image
+      description: 'AI Enhance: Upscale 4x + Face Restore in a single API call.
+
+
+        Chains upscale-4x → codeformer face restore for the best result.
+
+        Costs 60 credits (vs 70 if called separately — upscale 35 + restore-face 35
+        — bundle discount).'
+      operationId: enhance_image_v1_image_enhance_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_enhance_image_v1_image_enhance_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/models:
+    get:
+      tags:
+      - Models
+      summary: List Models
+      operationId: list_models_v1_models_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /v1/auth/signup:
+    post:
+      tags:
+      - Account
+      summary: Signup
+      operationId: signup_v1_auth_signup_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/login:
+    post:
+      tags:
+      - Account
+      summary: Login
+      operationId: login_v1_auth_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/google:
+    get:
+      tags:
+      - Account
+      summary: Google Login
+      description: Redirect user to Google consent screen.
+      operationId: google_login_v1_auth_google_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /v1/auth/google/callback:
+    get:
+      tags:
+      - Account
+      summary: Google Callback
+      description: Handle Google OAuth callback — creates or logs in user.
+      operationId: google_callback_v1_auth_google_callback_get
+      parameters:
+      - name: code
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Code
+      - name: error
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Error
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/account:
+    get:
+      tags:
+      - Account
+      summary: Get Account
+      operationId: get_account_v1_account_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - HTTPBearer: []
+  /v1/account/balance:
+    get:
+      tags:
+      - Account
+      summary: Get Balance
+      operationId: get_balance_v1_account_balance_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+      security:
+      - HTTPBearer: []
+  /v1/account/usage:
+    get:
+      tags:
+      - Account
+      summary: Get Usage
+      operationId: get_usage_v1_account_usage_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/create-account:
+    post:
+      tags:
+      - Account
+      summary: Create Manual Account
+      description: Create a manual email/password account (admin only, LAN restricted
+        via Nginx).
+      operationId: create_manual_account_v1_admin_create_account_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateManualAccountRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/account/webhook:
+    get:
+      tags:
+      - Account
+      summary: Get Webhook Config
+      description: Get current webhook configuration.
+      operationId: get_webhook_config_v1_account_webhook_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - HTTPBearer: []
+    put:
+      tags:
+      - Account
+      summary: Configure Webhook
+      description: Set or remove a webhook URL. PixelAPI will POST job results here
+        when complete.
+      operationId: configure_webhook_v1_account_webhook_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookConfigRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/account/webhook/deliveries:
+    get:
+      tags:
+      - Account
+      summary: Webhook Delivery History
+      description: List recent webhook delivery attempts.
+      operationId: webhook_delivery_history_v1_account_webhook_deliveries_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/account/analytics:
+    get:
+      tags:
+      - Account
+      summary: Get Usage Analytics
+      description: Return usage analytics for the authenticated user.
+      operationId: get_usage_analytics_v1_account_analytics_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 30
+          title: Days
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/account/billing:
+    get:
+      tags:
+      - Account
+      summary: Get Billing Address
+      operationId: get_billing_address_v1_account_billing_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - HTTPBearer: []
+    put:
+      tags:
+      - Account
+      summary: Update Billing Address
+      operationId: update_billing_address_v1_account_billing_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillingAddressUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/feedback:
+    post:
+      tags:
+      - Feedback
+      summary: Submit Feedback
+      operationId: submit_feedback_v1_feedback_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/feedback/my:
+    get:
+      tags:
+      - Feedback
+      summary: My Feedback
+      description: List user's own feedback history.
+      operationId: my_feedback_v1_feedback_my_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/feedback/churn:
+    post:
+      tags:
+      - Feedback
+      summary: Submit Churn Feedback
+      description: Public endpoint — linked in cancellation emails. Token = HMAC of
+        user_id.
+      operationId: submit_churn_feedback_v1_feedback_churn_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChurnFeedbackRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/feedback/token/{user_id}:
+    get:
+      tags:
+      - Feedback
+      summary: Get Feedback Token
+      description: Internal helper — generate a feedback token for a user (called
+        by mailer).
+      operationId: get_feedback_token_v1_feedback_token__user_id__get
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/reports/daily:
+    get:
+      tags:
+      - Reports
+      summary: Daily Report
+      description: Generate daily analytics report.
+      operationId: daily_report_v1_reports_daily_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/reports/daily/formatted:
+    get:
+      tags:
+      - Reports
+      summary: Daily Report Formatted
+      description: Generate a formatted text report for Telegram/email.
+      operationId: daily_report_formatted_v1_reports_daily_formatted_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/payments/create-subscription:
+    post:
+      tags:
+      - Payments
+      summary: Create Subscription
+      description: 'Create a PayPal subscription for the authenticated user.
+
+
+        1. Validates the requested plan exists
+
+        2. Looks up the PayPal plan ID from our database
+
+        3. Creates a subscription via PayPal API
+
+        4. Returns the approval URL for the user to complete payment on PayPal
+
+
+        The user''s plan is NOT activated here — that happens via webhook
+
+        when PayPal confirms the subscription is active.'
+      operationId: create_subscription_v1_payments_create_subscription_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSubscriptionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/payments/webhook:
+    post:
+      tags:
+      - Payments
+      summary: Paypal Webhook
+      description: 'PayPal webhook handler — receives subscription lifecycle events.
+
+
+        This endpoint is called by PayPal''s servers (not by the user).
+
+        It must be publicly accessible and registered in PayPal''s developer dashboard.
+
+
+        Events we handle:
+
+        - BILLING.SUBSCRIPTION.ACTIVATED: User approved subscription → activate plan
+        + add credits
+
+        - PAYMENT.SALE.COMPLETED: Recurring payment succeeded → refresh credits for
+        new period
+
+        - BILLING.SUBSCRIPTION.CANCELLED: User or merchant cancelled → downgrade at
+        period end
+
+        - BILLING.SUBSCRIPTION.SUSPENDED: Payment failed → suspend immediately
+
+        - BILLING.SUBSCRIPTION.EXPIRED: Subscription reached end → downgrade to free
+
+
+        Security:
+
+        - Webhook signature is verified via PayPal''s verification endpoint
+
+        - Event IDs are stored to prevent duplicate processing (idempotency)
+
+        - Payment amounts are verified against our plan prices'
+      operationId: paypal_webhook_v1_payments_webhook_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /v1/payments/generate-invoice:
+    post:
+      tags:
+      - Payments
+      summary: Generate Invoice Now
+      description: 'Called from the billing address modal (client-side) right after
+        the user fills their address.
+
+        Picks the most recent payment without a zoho_invoice_id and generates the
+        Zoho invoice.'
+      operationId: generate_invoice_now_v1_payments_generate_invoice_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - HTTPBearer: []
+  /v1/payments/refund:
+    post:
+      tags:
+      - Payments
+      summary: Process Refund
+      description: 'Unified refund endpoint:
+
+        - Users can refund their own latest payment (user_id omitted)
+
+        - Admins (api_key == admin key) can refund any user / payment
+
+
+        Actions:
+
+        1. Fetch payment record
+
+        2. Refund via PayPal or Razorpay API
+
+        3. Void Zoho invoice
+
+        4. Deduct credits from user
+
+        5. Downgrade plan to free if subscription refund'
+      operationId: process_refund_v1_payments_refund_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/payments/subscription-status:
+    get:
+      tags:
+      - Payments
+      summary: Get Subscription Status
+      description: 'Get the current user''s subscription status.
+
+
+        Also checks if a cancelled subscription has expired and downgrades if needed.
+
+        This is a "lazy check" that supplements the webhook-based approach.'
+      operationId: get_subscription_status_v1_payments_subscription_status_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionStatusResponse'
+      security:
+      - HTTPBearer: []
+  /v1/payments/cancel-subscription:
+    post:
+      tags:
+      - Payments
+      summary: Cancel Subscription
+      description: 'Cancel the current user''s PayPal subscription.
+
+
+        → Calls PayPal API to cancel the subscription
+
+        → User keeps access until plan_expires_at
+
+        → Webhook will confirm the cancellation'
+      operationId: cancel_subscription_v1_payments_cancel_subscription_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelSubscriptionResponse'
+      security:
+      - HTTPBearer: []
+  /v1/image/remove-background:
+    post:
+      tags:
+      - editing
+      summary: Remove Background
+      description: 'Remove background from an image. Returns transparent PNG.
+
+
+        - Upload image as multipart/form-data
+
+        - Cost: 2 credits ($0.002)
+
+        - Model: BiRefNet (state-of-the-art, MIT license)
+
+        - Typical processing: 1-3 seconds
+
+        - Max file size: 20MB'
+      operationId: remove_background_v1_image_remove_background_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_remove_background_v1_image_remove_background_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/replace-background:
+    post:
+      tags:
+      - editing
+      summary: Replace Background
+      description: 'Remove background and replace with AI-generated scene or solid
+        color.
+
+
+        Smart detection:
+
+        - Solid colors: "white background", "#FF5733", "rgb(255,87,51)" -> instant,
+        no GPU needed
+
+        - Gradients: "gradient from blue to purple" -> instant gradient fill
+
+        - Transparent: "transparent" -> PNG with alpha channel
+
+        - Complex scenes: "product on marble table with studio lighting" -> SDXL generation
+
+
+        - Upload product image + describe desired background
+
+        - Cost: 5 credits ($0.005) — same whether solid color or AI-generated
+
+        - Pipeline: BiRefNet (bg removal) -> smart fill or SDXL inpainting
+
+        - Typical processing: 2-20 seconds (instant for solid colors, longer for AI
+        scenes)'
+      operationId: replace_background_v1_image_replace_background_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_replace_background_v1_image_replace_background_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/restore-face:
+    post:
+      tags:
+      - editing
+      summary: Restore Face
+      description: 'Restore and enhance faces in an image.
+
+
+        - Upload image with faces to enhance
+
+        - Cost: 3 credits ($0.003)
+
+        - Model: CodeFormer
+
+        - Typical processing: 2-5 seconds'
+      operationId: restore_face_v1_image_restore_face_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_restore_face_v1_image_restore_face_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/remove-object:
+    post:
+      tags:
+      - editing
+      summary: Remove Object
+      description: 'Remove an object from an image using AI inpainting.
+
+
+        - Upload image + describe what to remove (or provide mask)
+
+        - Cost: 5 credits ($0.005)
+
+        - Model: LaMa / SDXL inpainting
+
+        - Typical processing: 5-15 seconds'
+      operationId: remove_object_v1_image_remove_object_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_remove_object_v1_image_remove_object_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/remove-text:
+    post:
+      tags:
+      - editing
+      summary: Remove Text
+      description: 'Automatically detect and remove text/watermarks from an image.
+
+
+        - Upload image as multipart/form-data
+
+        - Cost: 5 credits ($0.005)
+
+        - Pipeline: EasyOCR (text detection) -> LaMa (inpainting)
+
+        - Typical processing: 5-15 seconds
+
+        - Removes: watermarks, date stamps, captions, phone numbers, etc.'
+      operationId: remove_text_v1_image_remove_text_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_remove_text_v1_image_remove_text_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/audio/generate:
+    post:
+      tags:
+      - audio
+      summary: Generate Audio
+      operationId: generate_audio_v1_audio_generate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AudioGenerateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/audio/{generation_id}:
+    get:
+      tags:
+      - audio
+      summary: Get Audio Status
+      operationId: get_audio_status_v1_audio__generation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: generation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Generation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/image/img2img:
+    post:
+      tags:
+      - Image Transformation
+      summary: Image To Image
+      description: 'Transform an image guided by a text prompt.
+
+
+        - Upload image + describe transformation
+
+        - Cost: 3 credits ($0.003)
+
+        - Model: SDXL img2img'
+      operationId: image_to_image_v1_image_img2img_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_image_to_image_v1_image_img2img_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/inpaint:
+    post:
+      tags:
+      - Image Transformation
+      summary: Inpaint
+      description: 'AI inpainting — fill masked regions with AI-generated content.
+
+
+        - Much higher quality than simple object removal (LaMa)
+
+        - Cost: 5 credits ($0.005)
+
+        - Model: SDXL Inpainting'
+      operationId: inpaint_v1_image_inpaint_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_inpaint_v1_image_inpaint_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/controlnet:
+    post:
+      tags:
+      - Image Transformation
+      summary: Controlnet Generate
+      description: 'Generate images following the structure of a reference image.
+
+
+        - Auto-detects edges from your image
+
+        - Great for: style transfer, architectural rendering, product variations
+
+        - Cost: 5 credits ($0.005)
+
+        - Model: ControlNet + SDXL'
+      operationId: controlnet_generate_v1_image_controlnet_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_controlnet_generate_v1_image_controlnet_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/razorpay/create-order:
+    post:
+      tags:
+      - Razorpay Payments
+      summary: Create Order
+      description: Create a Razorpay order for plan purchase or credit top-up.
+      operationId: create_order_v1_razorpay_create_order_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/razorpay/verify-payment:
+    post:
+      tags:
+      - Razorpay Payments
+      summary: Verify Payment
+      description: Verify Razorpay payment signature and activate plan/add credits.
+      operationId: verify_payment_v1_razorpay_verify_payment_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPaymentRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/razorpay/webhook:
+    post:
+      tags:
+      - Razorpay Payments
+      summary: Razorpay Webhook
+      description: Handle Razorpay webhook events as backup verification.
+      operationId: razorpay_webhook_v1_razorpay_webhook_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /v1/razorpay/config:
+    get:
+      tags:
+      - Razorpay Payments
+      summary: Razorpay Config
+      description: Return public Razorpay config for frontend.
+      operationId: razorpay_config_v1_razorpay_config_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /internal/upload:
+    post:
+      tags:
+      - internal
+      summary: Upload File
+      description: Receive file from GPU worker, save to local storage.
+      operationId: upload_file_internal_upload_post
+      parameters:
+      - name: x-internal-secret
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Internal-Secret
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_file_internal_upload_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/vitals:
+    get:
+      tags:
+      - Admin Vitals
+      summary: Get Vitals
+      description: Get hardware vitals from all GPU machines.
+      operationId: get_vitals_v1_admin_vitals_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/mushika-status:
+    get:
+      summary: Mushika Status
+      operationId: mushika_status_admin_api_mushika_status_get
+      parameters:
+      - name: token
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/tools/proxy/{path}:
+    get:
+      tags:
+      - tools-proxy
+      summary: Tools Proxy Disabled
+      operationId: tools_proxy_disabled_v1_tools_proxy__path__get
+      parameters:
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - tools-proxy
+      summary: Tools Proxy Disabled
+      operationId: tools_proxy_disabled_v1_tools_proxy__path__get
+      parameters:
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/virtual-tryon:
+    post:
+      tags:
+      - Virtual Try-On
+      summary: Virtual Tryon
+      operationId: virtual_tryon_v1_virtual_tryon_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VTONRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/virtual-tryon/jobs/{job_id}:
+    get:
+      tags:
+      - Virtual Try-On
+      summary: Get Vton Job
+      operationId: get_vton_job_v1_virtual_tryon_jobs__job_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Job Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/image/add-shadow:
+    post:
+      tags:
+      - Image
+      summary: Add Shadow
+      description: Add realistic AI-generated shadow to product images.
+      operationId: add_shadow_v1_image_add_shadow_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIShadowRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIShadowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/outpaint:
+    post:
+      tags:
+      - Image
+      summary: Outpaint Image
+      description: Extend image beyond its borders (outpainting).
+      operationId: outpaint_image_v1_image_outpaint_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutpaintRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutpaintResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/batch:
+    post:
+      tags:
+      - Image
+      summary: Batch Process
+      description: Process multiple images in a single API call.
+      operationId: batch_process_v1_image_batch_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/batch/{batch_id}:
+    get:
+      tags:
+      - Image
+      summary: Get Batch Status
+      description: Get status of all jobs in a batch.
+      operationId: get_batch_status_v1_image_batch__batch_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: batch_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Batch Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/image/product-photo:
+    post:
+      tags:
+      - Image
+      summary: AI Product Photography
+      description: 'Transform any product photo into a professional studio shot in
+        one API call.
+
+
+        **Pipeline:** Background removal → AI background generation → Shadow compositing
+
+
+        **Presets:** white-studio | gradient-light | marble | outdoor | custom
+
+
+        **Cost:** 75 credits ($0.075) — vs PhotoRoom $0.15+'
+      operationId: create_product_photo_v1_image_product_photo_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_create_product_photo_v1_image_product_photo_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPhotoResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /v1/image/caption:
+    post:
+      tags:
+      - Image
+      - image
+      summary: Auto-generate captions, alt text, and SEO tags from product images
+      description: 'Auto-generate product descriptions, SEO tags, and alt text using
+        Vision-Language AI.
+
+
+        **Modes:**
+
+        - : caption + tags + alt text
+
+        - : product description only
+
+        - : SEO/search tags only
+
+        - : accessibility alt text only
+
+
+        **Cost:** 5 credits ($0.005) — Unique to PixelAPI, no mainstream competitor'
+      operationId: caption_image_v1_image_caption_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_caption_image_v1_image_caption_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /admin/dashboard:
+    get:
+      tags:
+      - Admin
+      summary: Dashboard Page
+      operationId: dashboard_page_admin_dashboard_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/infra:
+    get:
+      tags:
+      - Admin
+      summary: Infra Dashboard
+      operationId: infra_dashboard_admin_infra_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/stats:
+    get:
+      tags:
+      - Admin
+      summary: Get Stats
+      operationId: get_stats_admin_api_stats_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/feedback:
+    get:
+      tags:
+      - Admin
+      summary: Admin Feedback
+      operationId: admin_feedback_admin_api_feedback_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      - name: min_rating
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 5
+          minimum: 0
+          default: 0
+          title: Min Rating
+      - name: max_rating
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 5
+          minimum: 1
+          default: 5
+          title: Max Rating
+      - name: model
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Model
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Category
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/recent:
+    get:
+      tags:
+      - Admin
+      summary: Recent Generations
+      operationId: recent_generations_admin_api_recent_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Limit
+      - name: model
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Model
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/system:
+    get:
+      tags:
+      - Admin
+      summary: System Health
+      operationId: system_health_admin_api_system_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/users:
+    get:
+      tags:
+      - Admin
+      summary: Admin Users
+      operationId: admin_users_admin_api_users_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          default: created_at
+          title: Sort By
+      - name: order
+        in: query
+        required: false
+        schema:
+          type: string
+          default: desc
+          title: Order
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/errors:
+    get:
+      tags:
+      - Admin
+      summary: Admin Errors
+      operationId: admin_errors_admin_api_errors_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Limit
+      - name: hours
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 24
+          title: Hours
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/metrics:
+    get:
+      tags:
+      - Admin
+      summary: Admin Metrics
+      operationId: admin_metrics_admin_api_metrics_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      - name: period
+        in: query
+        required: false
+        schema:
+          type: string
+          default: 24h
+          title: Period
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/alerts:
+    get:
+      tags:
+      - Admin
+      summary: Admin Alerts
+      operationId: admin_alerts_admin_api_alerts_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/block:
+    post:
+      tags:
+      - Admin
+      summary: Block User
+      description: Block an email from signing up and disable existing account.
+      operationId: block_user_admin_api_block_post
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/unblock:
+    post:
+      tags:
+      - Admin
+      summary: Unblock User
+      description: Unblock an email and re-enable account.
+      operationId: unblock_user_admin_api_unblock_post
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/revoke:
+    post:
+      tags:
+      - Admin
+      summary: Revoke Api Key
+      description: Revoke a user's API key and generate a new disabled one.
+      operationId: revoke_api_key_admin_api_revoke_post
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/set-credits:
+    post:
+      tags:
+      - Admin
+      summary: Set Credits
+      description: Set a user's credit balance (admin override).
+      operationId: set_credits_admin_api_set_credits_post
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditsRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/blocked:
+    get:
+      tags:
+      - Admin
+      summary: List Blocked
+      description: List all blocked emails.
+      operationId: list_blocked_admin_api_blocked_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/user/{user_id}:
+    get:
+      tags:
+      - Admin
+      summary: Get User Detail
+      description: Get detailed info for a specific user.
+      operationId: get_user_detail_admin_api_user__user_id__get
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/churn-feedback:
+    get:
+      tags:
+      - Admin
+      summary: Admin Churn Feedback
+      operationId: admin_churn_feedback_admin_api_churn_feedback_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/api/payments:
+    get:
+      tags:
+      - Admin
+      summary: Admin Get Payments
+      operationId: admin_get_payments_admin_api_payments_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/frontend-error:
+    post:
+      tags:
+      - frontend
+      summary: Log Frontend Error
+      operationId: log_frontend_error_v1_frontend_error_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /oauth/ph-callback:
+    get:
+      summary: Ph Callback
+      operationId: ph_callback_oauth_ph_callback_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+  /:
+    get:
+      summary: Root
+      operationId: root__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /health:
+    get:
+      summary: Health
+      operationId: health_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    AIShadowRequest:
+      properties:
+        image_url:
+          type: string
+          title: Image Url
+          description: URL of the image to add shadow to
+        shadow_type:
+          type: string
+          pattern: ^(soft|hard|natural|floating)$
+          title: Shadow Type
+          default: soft
+        shadow_opacity:
+          type: number
+          maximum: 1.0
+          minimum: 0.1
+          title: Shadow Opacity
+          default: 0.5
+        shadow_blur:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Shadow Blur
+          default: 25
+        shadow_offset_x:
+          type: integer
+          maximum: 100.0
+          minimum: -100.0
+          title: Shadow Offset X
+          default: 0
+        shadow_offset_y:
+          type: integer
+          maximum: 100.0
+          minimum: -100.0
+          title: Shadow Offset Y
+          default: 20
+        background_color:
+          items:
+            type: integer
+          type: array
+          maxItems: 3
+          minItems: 3
+          title: Background Color
+          default:
+          - 255
+          - 255
+          - 255
+      type: object
+      required:
+      - image_url
+      title: AIShadowRequest
+    AIShadowResponse:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+        credits_used:
+          type: number
+          title: Credits Used
+      type: object
+      required:
+      - generation_id
+      - status
+      - credits_used
+      title: AIShadowResponse
+    AudioGenerateRequest:
+      properties:
+        prompt:
+          type: string
+          maxLength: 500
+          minLength: 3
+          title: Prompt
+          description: Text description of the music to generate
+        duration:
+          type: integer
+          maximum: 30.0
+          minimum: 5.0
+          title: Duration
+          description: Duration in seconds (5-30)
+          default: 15
+        model:
+          type: string
+          title: Model
+          description: Model to use
+          default: musicgen-small
+      type: object
+      required:
+      - prompt
+      title: AudioGenerateRequest
+    AuthResponse:
+      properties:
+        api_key:
+          type: string
+          title: Api Key
+        token:
+          type: string
+          title: Token
+        email:
+          type: string
+          title: Email
+        credits:
+          type: number
+          title: Credits
+      type: object
+      required:
+      - api_key
+      - token
+      - email
+      - credits
+      title: AuthResponse
+    BalanceResponse:
+      properties:
+        credits_remaining:
+          type: number
+          title: Credits Remaining
+        plan:
+          type: string
+          title: Plan
+        email:
+          type: string
+          title: Email
+      type: object
+      required:
+      - credits_remaining
+      - plan
+      - email
+      title: BalanceResponse
+    BatchJobItem:
+      properties:
+        operation:
+          type: string
+          pattern: ^(remove-background|add-shadow|upscale|restore-face)$
+          title: Operation
+        image_url:
+          type: string
+          title: Image Url
+        params:
+          additionalProperties: true
+          type: object
+          title: Params
+      type: object
+      required:
+      - operation
+      - image_url
+      title: BatchJobItem
+    BatchJobStatus:
+      properties:
+        index:
+          type: integer
+          title: Index
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+      type: object
+      required:
+      - index
+      - generation_id
+      - status
+      title: BatchJobStatus
+    BatchRequest:
+      properties:
+        jobs:
+          items:
+            $ref: '#/components/schemas/BatchJobItem'
+          type: array
+          maxItems: 100
+          minItems: 1
+          title: Jobs
+        webhook_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Webhook Url
+      type: object
+      required:
+      - jobs
+      title: BatchRequest
+    BatchResponse:
+      properties:
+        batch_id:
+          type: string
+          title: Batch Id
+        total_jobs:
+          type: integer
+          title: Total Jobs
+        total_credits:
+          type: number
+          title: Total Credits
+        jobs:
+          items:
+            $ref: '#/components/schemas/BatchJobStatus'
+          type: array
+          title: Jobs
+      type: object
+      required:
+      - batch_id
+      - total_jobs
+      - total_credits
+      - jobs
+      title: BatchResponse
+    BillingAddressUpdate:
+      properties:
+        billing_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Name
+        billing_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Address
+        billing_city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing City
+        billing_state:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing State
+        billing_pincode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Pincode
+        billing_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Country
+        billing_gstin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Gstin
+      type: object
+      title: BillingAddressUpdate
+    BlockRequest:
+      properties:
+        email:
+          type: string
+          title: Email
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+          default: ''
+      type: object
+      required:
+      - email
+      title: BlockRequest
+    Body_caption_image_v1_image_caption_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+          description: Image to analyze (JPG/PNG/WEBP)
+        mode:
+          type: string
+          title: Mode
+          description: full | caption | tags | alt_text
+          default: full
+        style:
+          type: string
+          title: Style
+          description: product | creative | seo | technical
+          default: product
+        max_tags:
+          type: integer
+          maximum: 50.0
+          minimum: 1.0
+          title: Max Tags
+          description: Maximum number of tags to generate
+          default: 10
+      type: object
+      required:
+      - image
+      title: Body_caption_image_v1_image_caption_post
+    Body_controlnet_generate_v1_image_controlnet_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+          description: Reference image (edges auto-detected)
+        prompt:
+          type: string
+          title: Prompt
+          description: What to generate following the image structure
+        negative_prompt:
+          type: string
+          title: Negative Prompt
+          default: ''
+        width:
+          type: integer
+          maximum: 1536.0
+          minimum: 512.0
+          title: Width
+          default: 1024
+        height:
+          type: integer
+          maximum: 1536.0
+          minimum: 512.0
+          title: Height
+          default: 1024
+        conditioning_scale:
+          type: number
+          maximum: 1.5
+          minimum: 0.1
+          title: Conditioning Scale
+          default: 0.5
+        steps:
+          type: integer
+          maximum: 50.0
+          minimum: 10.0
+          title: Steps
+          default: 30
+        guidance_scale:
+          type: number
+          maximum: 20.0
+          minimum: 1.0
+          title: Guidance Scale
+          default: 7.5
+        seed:
+          type: integer
+          title: Seed
+      type: object
+      required:
+      - image
+      - prompt
+      title: Body_controlnet_generate_v1_image_controlnet_post
+    Body_create_product_photo_v1_image_product_photo_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+          description: Product image (JPG/PNG/WEBP, max 20MB)
+        preset:
+          type: string
+          title: Preset
+          description: 'Background preset: white-studio | gradient-light | marble
+            | outdoor | custom'
+          default: white-studio
+        background_prompt:
+          type: string
+          title: Background Prompt
+          description: Custom background (used when preset=custom)
+          default: ''
+        shadow_type:
+          type: string
+          title: Shadow Type
+          description: 'Shadow style: soft | hard | natural | floating | none'
+          default: soft
+        shadow_opacity:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Shadow Opacity
+          default: 0.45
+        output_format:
+          type: string
+          title: Output Format
+          description: 'Output format: jpeg | png | webp'
+          default: jpeg
+      type: object
+      required:
+      - image
+      title: Body_create_product_photo_v1_image_product_photo_post
+    Body_enhance_image_v1_image_enhance_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+        image_url:
+          type: string
+          title: Image Url
+        scale:
+          type: integer
+          maximum: 4.0
+          minimum: 2.0
+          title: Scale
+          default: 4
+        face_enhance:
+          type: boolean
+          title: Face Enhance
+          default: true
+      type: object
+      title: Body_enhance_image_v1_image_enhance_post
+    Body_image_to_image_v1_image_img2img_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+        prompt:
+          type: string
+          title: Prompt
+          description: What to transform the image into
+        enhance:
+          type: boolean
+          title: Enhance
+          description: AI-enhance the prompt
+          default: true
+        negative_prompt:
+          type: string
+          title: Negative Prompt
+          description: What to avoid
+          default: ''
+        strength:
+          type: number
+          maximum: 1.0
+          minimum: 0.1
+          title: Strength
+          description: 0.1=subtle, 1.0=complete redraw
+          default: 0.7
+        steps:
+          type: integer
+          maximum: 50.0
+          minimum: 10.0
+          title: Steps
+          default: 30
+        guidance_scale:
+          type: number
+          maximum: 20.0
+          minimum: 1.0
+          title: Guidance Scale
+          default: 7.5
+        seed:
+          type: integer
+          title: Seed
+      type: object
+      required:
+      - image
+      - prompt
+      title: Body_image_to_image_v1_image_img2img_post
+    Body_image_to_video_v1_video_i2v_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+          description: Reference image to animate (PNG/JPG)
+        prompt:
+          type: string
+          maxLength: 2000
+          minLength: 1
+          title: Prompt
+        duration:
+          type: number
+          maximum: 10.0
+          minimum: 1.0
+          title: Duration
+          default: 3.0
+        resolution:
+          type: string
+          pattern: ^(480p|720p)$
+          title: Resolution
+          default: 480p
+        negative_prompt:
+          type: string
+          title: Negative Prompt
+          default: ''
+        seed:
+          type: integer
+          title: Seed
+      type: object
+      required:
+      - image
+      - prompt
+      title: Body_image_to_video_v1_video_i2v_post
+    Body_inpaint_v1_image_inpaint_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+        mask:
+          type: string
+          format: binary
+          title: Mask
+          description: Mask image (white = area to regenerate)
+        prompt:
+          type: string
+          title: Prompt
+          description: What to fill the masked area with
+          default: ''
+        negative_prompt:
+          type: string
+          title: Negative Prompt
+          default: ''
+        strength:
+          type: number
+          maximum: 1.0
+          minimum: 0.5
+          title: Strength
+          default: 0.99
+        steps:
+          type: integer
+          maximum: 50.0
+          minimum: 10.0
+          title: Steps
+          default: 25
+        guidance_scale:
+          type: number
+          maximum: 20.0
+          minimum: 1.0
+          title: Guidance Scale
+          default: 7.5
+        seed:
+          type: integer
+          title: Seed
+      type: object
+      required:
+      - image
+      - mask
+      title: Body_inpaint_v1_image_inpaint_post
+    Body_remove_background_v1_image_remove_background_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+      type: object
+      required:
+      - image
+      title: Body_remove_background_v1_image_remove_background_post
+    Body_remove_object_v1_image_remove_object_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+        prompt:
+          type: string
+          title: Prompt
+          description: Describe the object to remove
+        mask:
+          type: string
+          format: binary
+          title: Mask
+          description: Optional mask image (white = area to remove)
+      type: object
+      required:
+      - image
+      - prompt
+      title: Body_remove_object_v1_image_remove_object_post
+    Body_remove_text_v1_image_remove_text_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+        languages:
+          type: string
+          title: Languages
+          description: Comma-separated language codes for OCR (e.g. 'en', 'en,fr,de')
+          default: en
+      type: object
+      required:
+      - image
+      title: Body_remove_text_v1_image_remove_text_post
+    Body_replace_background_v1_image_replace_background_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+        prompt:
+          type: string
+          title: Prompt
+          description: Text description of desired background (e.g. 'white', 'gradient
+            blue to purple', 'studio lighting on marble table')
+        background_color:
+          type: string
+          title: Background Color
+          description: 'Optional explicit color: hex (#FF0000), rgb(255,0,0), or name
+            (white, navy). Overrides prompt for solid colors.'
+      type: object
+      required:
+      - image
+      - prompt
+      title: Body_replace_background_v1_image_replace_background_post
+    Body_restore_face_v1_image_restore_face_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+      type: object
+      required:
+      - image
+      title: Body_restore_face_v1_image_restore_face_post
+    Body_upload_file_internal_upload_post:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+        path:
+          type: string
+          title: Path
+      type: object
+      required:
+      - file
+      - path
+      title: Body_upload_file_internal_upload_post
+    Body_upscale_image_v1_image_upscale_post:
+      properties:
+        image:
+          type: string
+          format: binary
+          title: Image
+        image_url:
+          type: string
+          title: Image Url
+        scale:
+          type: integer
+          maximum: 4.0
+          minimum: 2.0
+          title: Scale
+          default: 4
+      type: object
+      title: Body_upscale_image_v1_image_upscale_post
+    CancelSubscriptionResponse:
+      properties:
+        message:
+          type: string
+          title: Message
+        plan_expires_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plan Expires At
+      type: object
+      required:
+      - message
+      - plan_expires_at
+      title: CancelSubscriptionResponse
+    CaptionResponse:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+        credits_used:
+          type: number
+          title: Credits Used
+      type: object
+      required:
+      - generation_id
+      - status
+      - credits_used
+      title: CaptionResponse
+    ChurnFeedbackRequest:
+      properties:
+        token:
+          type: string
+          title: Token
+        reason:
+          type: string
+          title: Reason
+          description: Why did you cancel/leave?
+        score:
+          type: integer
+          maximum: 10.0
+          minimum: 1.0
+          title: Score
+          description: NPS score 1-10
+        comment:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Comment
+        would_return:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Would Return
+      type: object
+      required:
+      - token
+      - reason
+      - score
+      title: ChurnFeedbackRequest
+    CreateManualAccountRequest:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        password:
+          type: string
+          maxLength: 128
+          minLength: 6
+          title: Password
+        credits:
+          type: integer
+          title: Credits
+          default: 100
+      type: object
+      required:
+      - email
+      - password
+      title: CreateManualAccountRequest
+    CreateOrderRequest:
+      properties:
+        product:
+          type: string
+          title: Product
+          description: Plan key (starter/pro/scale) or pack key (pack_200/pack_1000/pack_5000)
+      type: object
+      required:
+      - product
+      title: CreateOrderRequest
+    CreateSubscriptionRequest:
+      properties:
+        plan:
+          type: string
+          title: Plan
+      type: object
+      required:
+      - plan
+      title: CreateSubscriptionRequest
+    CreateSubscriptionResponse:
+      properties:
+        subscription_id:
+          type: string
+          title: Subscription Id
+        approval_url:
+          type: string
+          title: Approval Url
+      type: object
+      required:
+      - subscription_id
+      - approval_url
+      title: CreateSubscriptionResponse
+    CreditsRequest:
+      properties:
+        user_id:
+          type: integer
+          title: User Id
+        credits:
+          type: number
+          title: Credits
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+          default: ''
+      type: object
+      required:
+      - user_id
+      - credits
+      title: CreditsRequest
+    FeedbackRequest:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        rating:
+          type: integer
+          maximum: 5.0
+          minimum: 1.0
+          title: Rating
+          description: 1-5 star rating
+        category:
+          anyOf:
+          - type: string
+            pattern: ^(quality|speed|prompt_accuracy|artifact|nsfw_false_positive|other)$
+          - type: 'null'
+          title: Category
+          description: Feedback category
+        comment:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Comment
+      type: object
+      required:
+      - generation_id
+      - rating
+      title: FeedbackRequest
+    FeedbackResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        generation_id:
+          type: string
+          title: Generation Id
+        rating:
+          type: integer
+          title: Rating
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        comment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Comment
+        message:
+          type: string
+          title: Message
+          default: Feedback submitted. Thank you!
+      type: object
+      required:
+      - id
+      - generation_id
+      - rating
+      - category
+      - comment
+      title: FeedbackResponse
+    GenerationStatus:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+        output_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Output Url
+        processing_ms:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Processing Ms
+        error_message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error Message
+        created_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created At
+        completed_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Completed At
+      type: object
+      required:
+      - generation_id
+      - status
+      title: GenerationStatus
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ImageGenerateRequest:
+      properties:
+        prompt:
+          type: string
+          maxLength: 2000
+          minLength: 1
+          title: Prompt
+        model:
+          type: string
+          pattern: ^(flux-schnell|flux-schnell-premium|sdxl)$
+          title: Model
+          default: flux-schnell
+        width:
+          type: integer
+          maximum: 1920.0
+          minimum: 256.0
+          title: Width
+          default: 1024
+        height:
+          type: integer
+          maximum: 1920.0
+          minimum: 256.0
+          title: Height
+          default: 1024
+        steps:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Steps
+        guidance_scale:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Guidance Scale
+        seed:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Seed
+        negative_prompt:
+          type: string
+          maxLength: 2000
+          title: Negative Prompt
+          default: ''
+        enhance_prompt:
+          type: boolean
+          title: Enhance Prompt
+          description: Auto-enhance prompt with artistic context
+          default: true
+      type: object
+      required:
+      - prompt
+      title: ImageGenerateRequest
+    ImageGenerateResponse:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+        model:
+          type: string
+          title: Model
+        credits_used:
+          type: number
+          title: Credits Used
+        estimated_seconds:
+          type: number
+          title: Estimated Seconds
+      type: object
+      required:
+      - generation_id
+      - status
+      - model
+      - credits_used
+      - estimated_seconds
+      title: ImageGenerateResponse
+    LoginRequest:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        password:
+          type: string
+          title: Password
+      type: object
+      required:
+      - email
+      - password
+      title: LoginRequest
+    OutpaintRequest:
+      properties:
+        image_url:
+          type: string
+          title: Image Url
+          description: URL of the image to extend
+        direction:
+          type: string
+          pattern: ^(all|left|right|top|bottom)$
+          title: Direction
+          default: all
+        extend_pixels:
+          type: integer
+          maximum: 512.0
+          minimum: 64.0
+          title: Extend Pixels
+          default: 256
+        prompt:
+          type: string
+          maxLength: 500
+          title: Prompt
+          default: ''
+      type: object
+      required:
+      - image_url
+      title: OutpaintRequest
+    OutpaintResponse:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+        credits_used:
+          type: number
+          title: Credits Used
+      type: object
+      required:
+      - generation_id
+      - status
+      - credits_used
+      title: OutpaintResponse
+    ProductPhotoResponse:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+        credits_used:
+          type: number
+          title: Credits Used
+        pipeline:
+          items: {}
+          type: array
+          title: Pipeline
+          default:
+          - remove-background
+          - replace-background
+          - add-shadow
+        estimated_seconds:
+          type: integer
+          title: Estimated Seconds
+          default: 15
+      type: object
+      required:
+      - generation_id
+      - status
+      - credits_used
+      title: ProductPhotoResponse
+    RefundRequest:
+      properties:
+        user_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: User Id
+        payment_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Payment Id
+        reason:
+          type: string
+          title: Reason
+          default: Customer request
+      type: object
+      title: RefundRequest
+    RevokeRequest:
+      properties:
+        user_id:
+          type: integer
+          title: User Id
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+          default: ''
+      type: object
+      required:
+      - user_id
+      title: RevokeRequest
+    SignupRequest:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        password:
+          type: string
+          maxLength: 128
+          minLength: 8
+          title: Password
+      type: object
+      required:
+      - email
+      - password
+      title: SignupRequest
+    SubscriptionStatusResponse:
+      properties:
+        plan:
+          type: string
+          title: Plan
+        subscription_status:
+          type: string
+          title: Subscription Status
+        paypal_subscription_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Paypal Subscription Id
+        plan_expires_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plan Expires At
+        credits_remaining:
+          type: number
+          title: Credits Remaining
+      type: object
+      required:
+      - plan
+      - subscription_status
+      - paypal_subscription_id
+      - plan_expires_at
+      - credits_remaining
+      title: SubscriptionStatusResponse
+    UpscaleStatus:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+        output_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Output Url
+        processing_ms:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Processing Ms
+        error_message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error Message
+      type: object
+      required:
+      - generation_id
+      - status
+      title: UpscaleStatus
+    VTONRequest:
+      properties:
+        garment_image:
+          type: string
+          title: Garment Image
+          description: Base64-encoded garment image (JPEG/PNG/WebP)
+        person_image:
+          type: string
+          title: Person Image
+          description: Base64-encoded person/model image (JPEG/PNG/WebP)
+        category:
+          type: string
+          title: Category
+          description: upperbody | lowerbody | dress
+          default: upperbody
+        n_samples:
+          type: integer
+          maximum: 4.0
+          minimum: 1.0
+          title: N Samples
+          default: 1
+        n_steps:
+          type: integer
+          maximum: 50.0
+          minimum: 1.0
+          title: N Steps
+          default: 20
+        image_scale:
+          type: number
+          maximum: 10.0
+          minimum: 0.1
+          title: Image Scale
+          default: 2.0
+        webhook_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Webhook Url
+      type: object
+      required:
+      - garment_image
+      - person_image
+      title: VTONRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    VerifyPaymentRequest:
+      properties:
+        razorpay_order_id:
+          type: string
+          title: Razorpay Order Id
+        razorpay_payment_id:
+          type: string
+          title: Razorpay Payment Id
+        razorpay_signature:
+          type: string
+          title: Razorpay Signature
+        product:
+          type: string
+          title: Product
+      type: object
+      required:
+      - razorpay_order_id
+      - razorpay_payment_id
+      - razorpay_signature
+      - product
+      title: VerifyPaymentRequest
+    VideoGenerateRequest:
+      properties:
+        enhance_prompt:
+          type: boolean
+          title: Enhance Prompt
+          description: Auto-enhance prompt for better model understanding
+          default: true
+        prompt:
+          type: string
+          maxLength: 2000
+          minLength: 1
+          title: Prompt
+        model:
+          type: string
+          pattern: ^wan2\.1$
+          title: Model
+          default: wan2.1
+        duration:
+          type: number
+          maximum: 10.0
+          minimum: 1.0
+          title: Duration
+          description: Duration in seconds
+          default: 3.0
+        resolution:
+          type: string
+          pattern: ^(480p|720p)$
+          title: Resolution
+          default: 480p
+        negative_prompt:
+          type: string
+          maxLength: 2000
+          title: Negative Prompt
+          default: ''
+        seed:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Seed
+      type: object
+      required:
+      - prompt
+      title: VideoGenerateRequest
+    VideoGenerateResponse:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+        model:
+          type: string
+          title: Model
+        credits_used:
+          type: number
+          title: Credits Used
+        estimated_seconds:
+          type: number
+          title: Estimated Seconds
+      type: object
+      required:
+      - generation_id
+      - status
+      - model
+      - credits_used
+      - estimated_seconds
+      title: VideoGenerateResponse
+    VideoStatus:
+      properties:
+        generation_id:
+          type: string
+          title: Generation Id
+        status:
+          type: string
+          title: Status
+        output_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Output Url
+        processing_ms:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Processing Ms
+        error_message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error Message
+        estimated_seconds:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Estimated Seconds
+        elapsed_seconds:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Elapsed Seconds
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+      type: object
+      required:
+      - generation_id
+      - status
+      title: VideoStatus
+    WebhookConfigRequest:
+      properties:
+        webhook_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Webhook Url
+        regenerate_secret:
+          type: boolean
+          title: Regenerate Secret
+          default: false
+      type: object
+      title: WebhookConfigRequest
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer
+servers:
+- url: https://api.pixelapi.dev
+  description: PixelAPI Production
